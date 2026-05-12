@@ -1,12 +1,32 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
-export async function authenticateUser(db: D1Database, correo: string, passwordHash: string) {
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const inputHash = await hashPassword(password);
+  return inputHash === hash;
+}
+
+export async function authenticateUser(db: D1Database, correo: string, password: string) {
   const user = await db
     .prepare("SELECT u.*, v.id as vet_id FROM users u LEFT JOIN veterinarians v ON v.user_id = u.id WHERE u.correo = ? AND u.estado = 'active'")
     .bind(correo)
     .first();
 
   if (!user) return null;
+
+  const passwordHash = (user as Record<string, unknown>).password_hash as string | null;
+  if (!passwordHash) return null;
+
+  const valid = await verifyPassword(password, passwordHash);
+  if (!valid) return null;
+
   return user;
 }
 
@@ -61,3 +81,5 @@ export async function logAudit(
     )
     .run();
 }
+
+export { hashPassword };

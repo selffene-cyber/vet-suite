@@ -18,9 +18,9 @@ export function MobileHeader() {
       <div className="flex-1" />
       <ThemeToggle />
       <Link
-        href="/dashboard"
+        href="/company"
         className="h-11 w-11 inline-flex items-center justify-center rounded-lg hover:bg-accent"
-        aria-label="Menú"
+        aria-label="Configuración"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="3" />

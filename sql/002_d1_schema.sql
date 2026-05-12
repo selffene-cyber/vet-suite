@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS users (
   auth_2fa_habilitada INTEGER NOT NULL DEFAULT 0,
   ultimo_acceso TEXT,
   veterinarian_id TEXT REFERENCES veterinarians(id) ON DELETE SET NULL,
+  password_hash TEXT,
   auth_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
