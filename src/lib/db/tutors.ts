@@ -2,9 +2,15 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 export async function getTutors(db: D1Database, companyId: string, search?: string, limit = 50, offset = 0) {
   if (search) {
+    const term = `%${search}%`;
     return db.prepare(
-      "SELECT * FROM tutors WHERE company_id = ? AND (nombre_completo LIKE ? OR rut LIKE ?) ORDER BY nombre_completo LIMIT ? OFFSET ?"
-    ).bind(companyId, `%${search}%`, `%${search}%`, limit, offset).all();
+      `SELECT * FROM tutors WHERE company_id = ? AND (
+        nombre_completo LIKE ? OR
+        rut LIKE ? OR
+        telefono LIKE ? OR
+        correo LIKE ?
+      ) ORDER BY nombre_completo LIMIT ? OFFSET ?`
+    ).bind(companyId, term, term, term, term, limit, offset).all();
   }
   return db.prepare(
     "SELECT * FROM tutors WHERE company_id = ? ORDER BY nombre_completo LIMIT ? OFFSET ?"

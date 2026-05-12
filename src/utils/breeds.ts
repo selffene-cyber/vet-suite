@@ -1,0 +1,340 @@
+export const SPECIES_GROUPS = [
+  { value: "perro", label: "Perro" },
+  { value: "gato", label: "Gato" },
+  { value: "ave", label: "Ave" },
+  { value: "exotico", label: "Animal Exótico" },
+  { value: "granja", label: "Animal de Granja" },
+  { value: "reptil", label: "Reptil" },
+  { value: "roedor", label: "Roedor" },
+  { value: "conejo", label: "Conejo y Lagomorfos" },
+  { value: "huron", label: "Hurón" },
+  { value: "equino", label: "Equino" },
+  { value: "otro", label: "Otro" },
+];
+
+const GLOBAL_BREEDS = [
+  { value: "Mestizo", group: "Comunes" },
+  { value: "Sin raza definida (SRD)", group: "Comunes" },
+  { value: "Otra raza", group: "Comunes" },
+  { value: "No identificada", group: "Comunes" },
+];
+
+export const DOG_BREEDS = [
+  { value: "Mestizo", group: "Mestizos y comunes" },
+  { value: "Quiltro", group: "Mestizos y comunes" },
+  { value: "Sin raza definida (SRD)", group: "Mestizos y comunes" },
+  { value: "Cruza pequeña", group: "Mestizos y comunes" },
+  { value: "Cruza mediana", group: "Mestizos y comunes" },
+  { value: "Cruza grande", group: "Mestizos y comunes" },
+  { value: "Cruza", group: "Mestizos y comunes" },
+  { value: "En evaluación", group: "Mestizos y comunes" },
+  { value: "No identificada", group: "Mestizos y comunes" },
+  { value: "Otra raza", group: "Mestizos y comunes" },
+  { value: "Chihuahua", group: "Razas pequeñas" },
+  { value: "Yorkshire Terrier", group: "Razas pequeñas" },
+  { value: "Pomerania", group: "Razas pequeñas" },
+  { value: "Maltés", group: "Razas pequeñas" },
+  { value: "Shih Tzu", group: "Razas pequeñas" },
+  { value: "Pug", group: "Razas pequeñas" },
+  { value: "Pekinés", group: "Razas pequeñas" },
+  { value: "Pinscher Miniatura", group: "Razas pequeñas" },
+  { value: "Fox Terrier Toy", group: "Razas pequeñas" },
+  { value: "Bichón Frisé", group: "Razas pequeñas" },
+  { value: "Bichón Maltés", group: "Razas pequeñas" },
+  { value: "Boston Terrier", group: "Razas pequeñas" },
+  { value: "Jack Russell Terrier", group: "Razas pequeñas" },
+  { value: "Schnauzer Miniatura", group: "Razas pequeñas" },
+  { value: "Caniche Toy", group: "Razas pequeñas" },
+  { value: "Caniche Mini", group: "Razas pequeñas" },
+  { value: "Dachshund / Salchicha", group: "Razas pequeñas" },
+  { value: "Bulldog Francés", group: "Razas pequeñas" },
+  { value: "Cavalier King Charles Spaniel", group: "Razas pequeñas" },
+  { value: "Papillón", group: "Razas pequeñas" },
+  { value: "Coton de Tuléar", group: "Razas pequeñas" },
+  { value: "West Highland White Terrier", group: "Razas pequeñas" },
+  { value: "Lhasa Apso", group: "Razas pequeñas" },
+  { value: "Beagle", group: "Razas medianas" },
+  { value: "Border Collie", group: "Razas medianas" },
+  { value: "Cocker Spaniel Inglés", group: "Razas medianas" },
+  { value: "Cocker Spaniel Americano", group: "Razas medianas" },
+  { value: "Bulldog Inglés", group: "Razas medianas" },
+  { value: "Bull Terrier", group: "Razas medianas" },
+  { value: "Staffordshire Bull Terrier", group: "Razas medianas" },
+  { value: "Schnauzer Estándar", group: "Razas medianas" },
+  { value: "Samoyedo", group: "Razas medianas" },
+  { value: "Shar Pei", group: "Razas medianas" },
+  { value: "Whippet", group: "Razas medianas" },
+  { value: "Setter Inglés", group: "Razas medianas" },
+  { value: "Springer Spaniel", group: "Razas medianas" },
+  { value: "Husky Siberiano", group: "Razas medianas" },
+  { value: "Australian Shepherd", group: "Razas medianas" },
+  { value: "Pastor Australiano", group: "Razas medianas" },
+  { value: "Kelpie Australiano", group: "Razas medianas" },
+  { value: "Basenji", group: "Razas medianas" },
+  { value: "Chow Chow", group: "Razas medianas" },
+  { value: "Dálmata", group: "Razas medianas" },
+  { value: "Brittany Spaniel", group: "Razas medianas" },
+  { value: "Vizsla", group: "Razas medianas" },
+  { value: "Shiba Inu", group: "Razas medianas" },
+  { value: "Akita Inu", group: "Razas medianas" },
+  { value: "American Staffordshire Terrier", group: "Razas medianas" },
+  { value: "Pitbull Terrier Americano", group: "Razas medianas" },
+  { value: "Basset Hound", group: "Razas medianas" },
+  { value: "Labrador Retriever", group: "Razas grandes" },
+  { value: "Golden Retriever", group: "Razas grandes" },
+  { value: "Pastor Alemán", group: "Razas grandes" },
+  { value: "Pastor Belga Malinois", group: "Razas grandes" },
+  { value: "Pastor Belga Groenendael", group: "Razas grandes" },
+  { value: "Pastor Suizo", group: "Razas grandes" },
+  { value: "Rottweiler", group: "Razas grandes" },
+  { value: "Doberman", group: "Razas grandes" },
+  { value: "Boxer", group: "Razas grandes" },
+  { value: "Weimaraner", group: "Razas grandes" },
+  { value: "Gran Danés", group: "Razas grandes" },
+  { value: "San Bernardo", group: "Razas grandes" },
+  { value: "Terranova", group: "Razas grandes" },
+  { value: "Bernés de la Montaña", group: "Razas grandes" },
+  { value: "Cane Corso", group: "Razas grandes" },
+  { value: "Dogo Argentino", group: "Razas grandes" },
+  { value: "Fila Brasileiro", group: "Razas grandes" },
+  { value: "Mastín Napolitano", group: "Razas grandes" },
+  { value: "Mastín Inglés", group: "Razas grandes" },
+  { value: "Mastín Español", group: "Razas grandes" },
+  { value: "Leonberger", group: "Razas grandes" },
+  { value: "Rhodesian Ridgeback", group: "Razas grandes" },
+  { value: "Alaskan Malamute", group: "Razas grandes" },
+  { value: "Setter Irlandés", group: "Razas grandes" },
+  { value: "Collie", group: "Razas grandes" },
+  { value: "Borzoi", group: "Razas grandes" },
+  { value: "Airedale Terrier", group: "Razas grandes" },
+  { value: "Boyero de Berna", group: "Razas de trabajo / pastoreo" },
+  { value: "Pastor de Anatolia", group: "Razas de trabajo / pastoreo" },
+  { value: "Pastor Catalán", group: "Razas de trabajo / pastoreo" },
+  { value: "Pastor de Brie", group: "Razas de trabajo / pastoreo" },
+  { value: "Komondor", group: "Razas de trabajo / pastoreo" },
+  { value: "Pastor Maremmano", group: "Razas de trabajo / pastoreo" },
+  { value: "Old English Sheepdog", group: "Razas de trabajo / pastoreo" },
+  { value: "Corgi Pembroke", group: "Razas de trabajo / pastoreo" },
+  { value: "Corgi Cardigan", group: "Razas de trabajo / pastoreo" },
+  { value: "Fox Terrier", group: "Razas tipo terrier" },
+  { value: "Bloodhound", group: "Razas tipo sabueso / caza" },
+  { value: "Pointer Inglés", group: "Razas tipo sabueso / caza" },
+  { value: "Coonhound", group: "Razas tipo sabueso / caza" },
+  { value: "Galgo Español", group: "Razas tipo sabueso / caza" },
+  { value: "Greyhound", group: "Razas tipo sabueso / caza" },
+  { value: "Xoloitzcuintle", group: "Razas menos comunes en Chile" },
+  { value: "Perro sin pelo del Perú", group: "Razas menos comunes en Chile" },
+  { value: "Dogo de Burdeos", group: "Razas menos comunes en Chile" },
+  { value: "Keeshond", group: "Razas menos comunes en Chile" },
+  { value: "Schipperke", group: "Razas menos comunes en Chile" },
+  { value: "Saluki", group: "Razas menos comunes en Chile" },
+  { value: "Boerboel", group: "Razas menos comunes en Chile" },
+  { value: "Tosa Inu", group: "Razas menos comunes en Chile" },
+  { value: "Kuvasz", group: "Razas menos comunes en Chile" },
+  { value: "Flat Coated Retriever", group: "Razas menos comunes en Chile" },
+  { value: "Nova Scotia Duck Tolling Retriever", group: "Razas menos comunes en Chile" },
+  { value: "Lobero Irlandés", group: "Razas gigantes" },
+];
+
+export const CAT_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "Mestizo / Común Europeo", group: "Comunes" },
+  { value: "Doméstico de Pelo Corto", group: "Comunes" },
+  { value: "Doméstico de Pelo Largo", group: "Comunes" },
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Siamés", group: "Razas de pelo corto" },
+  { value: "Persa", group: "Razas de pelo largo" },
+  { value: "Maine Coon", group: "Razas de pelo largo" },
+  { value: "Bengalí", group: "Razas de pelo corto" },
+  { value: "British Shorthair", group: "Razas de pelo corto" },
+  { value: "Ragdoll", group: "Razas de pelo largo" },
+  { value: "Sphynx", group: "Razas de pelo corto" },
+  { value: "Azul Ruso", group: "Razas de pelo corto" },
+  { value: "Angora Turco", group: "Razas de pelo largo" },
+  { value: "Bosque de Noruega", group: "Razas de pelo largo" },
+  { value: "Abisinio", group: "Razas de pelo corto" },
+  { value: "Scottish Fold", group: "Razas de pelo corto" },
+  { value: "Himalayo", group: "Razas de pelo largo" },
+  { value: "Burmés", group: "Razas de pelo corto" },
+  { value: "Savannah", group: "Razas de pelo corto" },
+  { value: "Devon Rex", group: "Razas de pelo corto" },
+  { value: "Cornish Rex", group: "Razas de pelo corto" },
+  { value: "Otro", group: "Comunes" },
+];
+
+export const BIRD_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Periquito Australiano", group: "Compañía" },
+  { value: "Ninfa / Carolino", group: "Compañía" },
+  { value: "Agapornis", group: "Compañía" },
+  { value: "Cotorra Argentina", group: "Compañía" },
+  { value: "Canario", group: "Compañía" },
+  { value: "Diamante Mandarín", group: "Compañía" },
+  { value: "Loro Amazona", group: "Compañía" },
+  { value: "Guacamayo", group: "Compañía" },
+  { value: "Cacatúa", group: "Compañía" },
+  { value: "Eclectus", group: "Compañía" },
+  { value: "Yaco Africano", group: "Compañía" },
+  { value: "Caique", group: "Compañía" },
+  { value: "Conure", group: "Compañía" },
+  { value: "Tucán", group: "Compañía" },
+  { value: "Gallina", group: "Corral / Producción" },
+  { value: "Gallo", group: "Corral / Producción" },
+  { value: "Pollo Broiler", group: "Corral / Producción" },
+  { value: "Pato", group: "Corral / Producción" },
+  { value: "Ganso", group: "Corral / Producción" },
+  { value: "Pavo", group: "Corral / Producción" },
+  { value: "Codorniz", group: "Corral / Producción" },
+  { value: "Faisán", group: "Ornamentales" },
+  { value: "Pavo Real", group: "Ornamentales" },
+];
+
+export const REPTILE_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Iguana Verde", group: "Reptiles" },
+  { value: "Gecko Leopardo", group: "Reptiles" },
+  { value: "Gecko Crestado", group: "Reptiles" },
+  { value: "Dragón Barbudo", group: "Reptiles" },
+  { value: "Camaleón", group: "Reptiles" },
+  { value: "Tortuga de Tierra", group: "Reptiles" },
+  { value: "Tortuga de Agua", group: "Reptiles" },
+  { value: "Boa Constrictor", group: "Reptiles" },
+  { value: "Pitón Bola", group: "Reptiles" },
+  { value: "Serpiente del Maíz", group: "Reptiles" },
+  { value: "Anolis", group: "Reptiles" },
+  { value: "Monitor", group: "Reptiles" },
+  { value: "Skink", group: "Reptiles" },
+  { value: "Otro", group: "Reptiles" },
+];
+
+export const RODENT_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Hámster Sirio", group: "Roedores" },
+  { value: "Hámster Ruso", group: "Roedores" },
+  { value: "Cobayo / Cuy / Cuyo", group: "Roedores" },
+  { value: "Ratón", group: "Roedores" },
+  { value: "Rata", group: "Roedores" },
+  { value: "Chinchilla", group: "Roedores" },
+  { value: "Degú", group: "Roedores" },
+  { value: "Jerbo", group: "Roedores" },
+  { value: "Ardilla", group: "Roedores" },
+  { value: "Otro", group: "Roedores" },
+];
+
+export const RABBIT_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Conejo Cabeza de León", group: "Conejos" },
+  { value: "Holland Lop", group: "Conejos" },
+  { value: "Mini Lop", group: "Conejos" },
+  { value: "Rex", group: "Conejos" },
+  { value: "Californiano", group: "Conejos" },
+  { value: "Neozelandés", group: "Conejos" },
+  { value: "Belier", group: "Conejos" },
+  { value: "Angora", group: "Conejos" },
+  { value: "Mini Rex", group: "Conejos" },
+  { value: "Otro", group: "Conejos" },
+];
+
+export const FERRET_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Hurón Albino", group: "Hurones" },
+  { value: "Hurón Sable", group: "Hurones" },
+  { value: "Hurón Panda", group: "Hurones" },
+  { value: "Hurón Champagne", group: "Hurones" },
+  { value: "Otro", group: "Hurones" },
+];
+
+export const FARM_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Holstein", group: "Bovinos" },
+  { value: "Jersey", group: "Bovinos" },
+  { value: "Angus", group: "Bovinos" },
+  { value: "Hereford", group: "Bovinos" },
+  { value: "Wagyu", group: "Bovinos" },
+  { value: "Overo Colorado", group: "Bovinos" },
+  { value: "Clavel Alemán", group: "Bovinos" },
+  { value: "Suffolk", group: "Ovinos" },
+  { value: "Merino", group: "Ovinos" },
+  { value: "Dorset", group: "Ovinos" },
+  { value: "Romney Marsh", group: "Ovinos" },
+  { value: "Boer", group: "Caprinos" },
+  { value: "Saanen", group: "Caprinos" },
+  { value: "Anglo Nubian", group: "Caprinos" },
+  { value: "Landrace", group: "Porcinos" },
+  { value: "Yorkshire", group: "Porcinos" },
+  { value: "Duroc", group: "Porcinos" },
+  { value: "Pietrain", group: "Porcinos" },
+  { value: "Alpaca", group: "Camélidos" },
+  { value: "Llama", group: "Camélidos" },
+];
+
+export const EQUINE_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Criollo Chileno", group: "Equinos" },
+  { value: "Cuarto de Milla", group: "Equinos" },
+  { value: "Árabe", group: "Equinos" },
+  { value: "Pura Sangre Inglés", group: "Equinos" },
+  { value: "Appaloosa", group: "Equinos" },
+  { value: "Andaluz", group: "Equinos" },
+  { value: "Percherón", group: "Equinos" },
+  { value: "Frisón", group: "Equinos" },
+  { value: "Pony", group: "Equinos" },
+  { value: "Otro", group: "Equinos" },
+];
+
+export const EXOTIC_BREEDS = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+  { value: "Erizo Africano", group: "Exóticos" },
+  { value: "Sugar Glider", group: "Exóticos" },
+  { value: "Mono Tití", group: "Exóticos" },
+  { value: "Zorrillo doméstico", group: "Exóticos" },
+  { value: "Axolote", group: "Exóticos" },
+  { value: "Tarántula", group: "Exóticos" },
+  { value: "Escorpión", group: "Exóticos" },
+  { value: "Rana Pacman", group: "Exóticos" },
+  { value: "Rana Arborícola", group: "Exóticos" },
+  { value: "Caracol Gigante Africano", group: "Exóticos" },
+  { value: "Otro", group: "Exóticos" },
+];
+
+const OTHER_BREEDS_LIST = [
+  ...GLOBAL_BREEDS,
+  { value: "En evaluación", group: "Comunes" },
+];
+
+export function getBreedsForSpecies(species: string) {
+  switch (species) {
+    case "perro":
+    case "canino":
+      return DOG_BREEDS;
+    case "gato":
+    case "felino":
+      return CAT_BREEDS;
+    case "ave":
+      return BIRD_BREEDS;
+    case "reptil":
+      return REPTILE_BREEDS;
+    case "roedor":
+      return RODENT_BREEDS;
+    case "conejo":
+      return RABBIT_BREEDS;
+    case "huron":
+      return FERRET_BREEDS;
+    case "granja":
+      return FARM_BREEDS;
+    case "equino":
+      return EQUINE_BREEDS;
+    case "exotico":
+      return EXOTIC_BREEDS;
+    default:
+      return OTHER_BREEDS_LIST;
+  }
+}
