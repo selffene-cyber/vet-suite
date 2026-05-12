@@ -14,3 +14,4 @@ export {
   getPrescriptionTypeBadgeColor,
   getPrescriptionStatusLabel,
 } from "./helpers";
+export { REGIONS, COMMUNES } from "./regions";

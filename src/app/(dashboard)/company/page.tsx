@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Stepper } from "@/components/ui/stepper";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { REGIONS, COMMUNES } from "@/utils/regions";
 
 const STEPS = [
   { label: "Datos" },
@@ -15,27 +17,13 @@ const STEPS = [
   { label: "Branding" },
 ];
 
-const REGIONS = [
-  { value: "tarapaca", label: "Tarapacá" },
-  { value: "antofagasta", label: "Antofagasta" },
-  { value: "atacama", label: "Atacama" },
-  { value: "coquimbo", label: "Coquimbo" },
-  { value: "valparaiso", label: "Valparaíso" },
-  { value: "ohiggins", label: "O'Higgins" },
-  { value: "maule", label: "Maule" },
-  { value: "biobio", label: "Biobío" },
-  { value: "araucania", label: "Araucanía" },
-  { value: "los_lagos", label: "Los Lagos" },
-  { value: "aysen", label: "Aysén" },
-  { value: "magallanes", label: "Magallanes" },
-  { value: "rm", label: "Metropolitana" },
-  { value: "los_rios", label: "Los Ríos" },
-  { value: "arica", label: "Arica y Parinacota" },
-  { value: "nuble", label: "Ñuble" },
-];
-
 export default function CompanyPage() {
   const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [timbreFile, setTimbreFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     raz_social: "",
     nombre_fantasia: "",
@@ -55,14 +43,142 @@ export default function CompanyPage() {
     correo_remitente: "",
     firma_config: "imagen",
     texto_legal_pie: "",
+    logo_url: "",
+    timbre_url: "",
   });
+
+  useEffect(() => {
+    fetch("/api/company")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.company) {
+          const c = data.company as Record<string, unknown>;
+          const s = (data.settings as Record<string, unknown>) || {};
+          setForm((f) => ({
+            ...f,
+            raz_social: (c.raz_social as string) || "",
+            nombre_fantasia: (c.nombre_fantasia as string) || "",
+            rut: (c.rut as string) || "",
+            telefono: (c.telefono as string) || "",
+            correo_contacto: (c.correo_contacto as string) || "",
+            sitio_web: (c.sitio_web as string) || "",
+            direccion: (c.direccion as string) || "",
+            comuna: (c.comuna as string) || "",
+            region: (c.region as string) || "",
+            nro_autorizacion_sanitaria: (c.nro_autorizacion_sanitaria as string) || "",
+            logo_url: (c.logo_url as string) || "",
+            timbre_url: (c.timbre_url as string) || "",
+            texto_legal_pie: (c.texto_legal_pie as string) || "",
+            folio_inicial: (s.folio_inicial as number) || 1,
+            prefijo_folio: (s.prefijo_folio as string) || "REC-",
+            dias_vigencia_simple: (s.dias_vigencia_receta_simple as number) || 30,
+            dias_vigencia_retenida: (s.dias_vigencia_receta_retenida as number) || 30,
+            dias_vigencia_control: (s.dias_vigencia_receta_control_saldo as number) || 90,
+            correo_remitente: (s.correo_remitente as string) || "",
+            firma_config: (s.firma_config as string) || "imagen",
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const updateField = (field: string, value: string | number) =>
     setForm((f) => ({ ...f, [field]: value }));
 
+  const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("prefix", prefix);
+    formData.append("companyId", "company-demo-001");
+    const res = await fetch("/api/storage/uploads/company/company-demo-001", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url as string;
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      let logoUrl = form.logo_url;
+      let timbreUrl = form.timbre_url;
+
+      if (logoFile) {
+        const url = await uploadFile(logoFile, "logos");
+        if (url) logoUrl = url;
+      }
+      if (timbreFile) {
+        const url = await uploadFile(timbreFile, "timbres");
+        if (url) timbreUrl = url;
+      }
+
+      const payload = {
+        companyId: "company-demo-001",
+        raz_social: form.raz_social,
+        nombre_fantasia: form.nombre_fantasia,
+        rut: form.rut,
+        telefono: form.telefono,
+        correo_contacto: form.correo_contacto,
+        sitio_web: form.sitio_web || null,
+        direccion: form.direccion,
+        comuna: form.comuna,
+        region: form.region,
+        nro_autorizacion_sanitaria: form.nro_autorizacion_sanitaria || null,
+        logo_url: logoUrl || null,
+        timbre_url: timbreUrl || null,
+        texto_legal_pie: form.texto_legal_pie || null,
+        folio_inicial: form.folio_inicial,
+        prefijo_folio: form.prefijo_folio,
+        dias_vigencia_receta_simple: form.dias_vigencia_simple,
+        dias_vigencia_receta_retenida: form.dias_vigencia_retenida,
+        dias_vigencia_receta_control_saldo: form.dias_vigencia_control,
+        correo_remitente: form.correo_remitente,
+        firma_config: form.firma_config,
+      };
+
+      const res = await fetch("/api/company", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Error al guardar");
+      }
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const communeOptions = form.region
+    ? (COMMUNES[form.region] || []).map((c) => ({ value: c, label: c }))
+    : [];
+
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-bold">Configuración de Empresa</h1>
+
+      {error && (
+        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-lg bg-green-100 dark:bg-green-900/30 p-3 text-sm text-green-700 dark:text-green-300">
+          Configuración guardada correctamente
+        </div>
+      )}
 
       <Stepper steps={STEPS} currentStep={step} />
 
@@ -114,17 +230,23 @@ export default function CompanyPage() {
                 value={form.direccion}
                 onChange={(e) => updateField("direccion", e.target.value)}
               />
-              <Input
-                label="Comuna"
-                value={form.comuna}
-                onChange={(e) => updateField("comuna", e.target.value)}
-              />
               <Select
                 label="Región"
                 value={form.region}
-                onChange={(e) => updateField("region", e.target.value)}
+                onChange={(e) => {
+                  updateField("region", e.target.value);
+                  updateField("comuna", "");
+                }}
                 options={REGIONS}
                 placeholder="Seleccionar región"
+              />
+              <Select
+                label="Comuna"
+                value={form.comuna}
+                onChange={(e) => updateField("comuna", e.target.value)}
+                options={communeOptions}
+                placeholder={form.region ? "Seleccionar comuna" : "Primero seleccione región"}
+                disabled={!form.region}
               />
               <Input
                 label="N° Autorización Sanitaria (opcional)"
@@ -156,10 +278,7 @@ export default function CompanyPage() {
                 type="number"
                 value={String(form.dias_vigencia_simple)}
                 onChange={(e) =>
-                  updateField(
-                    "dias_vigencia_simple",
-                    parseInt(e.target.value) || 30
-                  )
+                  updateField("dias_vigencia_simple", parseInt(e.target.value) || 30)
                 }
               />
               <Input
@@ -167,10 +286,7 @@ export default function CompanyPage() {
                 type="number"
                 value={String(form.dias_vigencia_retenida)}
                 onChange={(e) =>
-                  updateField(
-                    "dias_vigencia_retenida",
-                    parseInt(e.target.value) || 30
-                  )
+                  updateField("dias_vigencia_retenida", parseInt(e.target.value) || 30)
                 }
               />
               <Input
@@ -178,10 +294,7 @@ export default function CompanyPage() {
                 type="number"
                 value={String(form.dias_vigencia_control)}
                 onChange={(e) =>
-                  updateField(
-                    "dias_vigencia_control",
-                    parseInt(e.target.value) || 90
-                  )
+                  updateField("dias_vigencia_control", parseInt(e.target.value) || 90)
                 }
               />
               <Input
@@ -196,10 +309,7 @@ export default function CompanyPage() {
                 onChange={(e) => updateField("firma_config", e.target.value)}
                 options={[
                   { value: "imagen", label: "Imagen de firma" },
-                  {
-                    value: "firma_electronica",
-                    label: "Firma electrónica avanzada (preparado)",
-                  },
+                  { value: "firma_electronica", label: "Firma electrónica avanzada (preparado)" },
                 ]}
               />
             </>
@@ -207,35 +317,18 @@ export default function CompanyPage() {
 
           {step === 3 && (
             <>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  Logo de la Clínica
-                </label>
-                <div className="flex items-center gap-3">
-                  <button className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:bg-accent transition-colors">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                  </button>
-                  <div className="text-xs text-muted-foreground">
-                    <p>Toca para cargar desde</p>
-                    <p>cámara o galería</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  Timbre / Sello
-                </label>
-                <button className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:bg-accent transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                </button>
-              </div>
+              <ImageUpload
+                label="Logo de la Clínica"
+                value={form.logo_url}
+                onChange={(file) => setLogoFile(file)}
+                preview={form.logo_url ? form.logo_url : undefined}
+              />
+              <ImageUpload
+                label="Timbre / Sello"
+                value={form.timbre_url}
+                onChange={(file) => setTimbreFile(file)}
+                preview={form.timbre_url ? form.timbre_url : undefined}
+              />
               <Textarea
                 label="Texto legal pie de página"
                 value={form.texto_legal_pie}
@@ -266,7 +359,13 @@ export default function CompanyPage() {
             Siguiente
           </Button>
         ) : (
-          <Button className="flex-1">Guardar Configuración</Button>
+          <Button
+            className="flex-1"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? "Guardando..." : "Guardar Configuración"}
+          </Button>
         )}
       </div>
     </div>
