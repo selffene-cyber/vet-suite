@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/utils";
 
 interface TutorOption {
@@ -28,12 +29,49 @@ export function TutorSearch({ label, placeholder, value, tutorName, onChange, on
   const [results, setResults] = useState<TutorOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current || !open) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedHeight = 340;
+    const showAbove = spaceBelow < estimatedHeight && rect.top > spaceBelow;
+    setDropdownStyle({
+      position: "fixed",
+      top: showAbove ? rect.top - estimatedHeight : rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, [open]);
+
+  useEffect(() => {
+    updatePosition();
+  }, [updatePosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleScroll = () => updatePosition();
+    const handleResize = () => updatePosition();
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [open, updatePosition]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -74,11 +112,13 @@ export function TutorSearch({ label, placeholder, value, tutorName, onChange, on
 
   const handleOpen = () => {
     if (disabled) return;
-    setOpen(!open);
-    if (!open) {
+    const nextOpen = !open;
+    setOpen(nextOpen);
+    if (nextOpen) {
       setQuery("");
       setResults([]);
       setSearched(false);
+      setTimeout(() => updatePosition(), 0);
     }
   };
 
@@ -92,8 +132,100 @@ export function TutorSearch({ label, placeholder, value, tutorName, onChange, on
     onChange("", null);
   };
 
+  const dropdownContent = open ? (
+    <div
+      ref={dropdownRef}
+      style={dropdownStyle}
+      className="rounded-md border bg-popover shadow-md"
+    >
+      <div className="p-2 border-b">
+        <input
+          type="text"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="Buscar por nombre, RUT, teléfono o correo..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+      </div>
+      <div className="max-h-60 overflow-y-auto overscroll-contain p-1">
+        {loading && (
+          <div className="flex items-center justify-center py-6">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
+          </div>
+        )}
+        {!loading && searched && results.length === 0 && query.trim() && (
+          <div className="py-4 text-center">
+            <p className="text-sm text-muted-foreground mb-3">No se encontraron tutores</p>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onCreateNew();
+              }}
+              className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Crear nuevo tutor
+            </button>
+          </div>
+        )}
+        {!loading && !searched && !query.trim() && (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            Escriba para buscar un tutor
+          </p>
+        )}
+        {!loading && results.length > 0 && results.map((tutor) => (
+          <button
+            key={tutor.id}
+            type="button"
+            onClick={() => handleSelect(tutor)}
+            className={cn(
+              "flex w-full items-center rounded-sm px-2 py-2 text-sm hover:bg-accent transition-colors",
+              value === tutor.id && "bg-accent text-accent-foreground"
+            )}
+          >
+            <div className="flex-1 min-w-0 text-left">
+              <p className="font-medium truncate">{tutor.nombre_completo}</p>
+              <p className="text-xs text-muted-foreground">
+                {tutor.rut}{tutor.telefono ? ` · ${tutor.telefono}` : ""}
+              </p>
+            </div>
+            {value === tutor.id && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-2 shrink-0">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </button>
+        ))}
+      </div>
+      {!loading && results.length > 0 && (
+        <div className="border-t p-2">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onCreateNew();
+            }}
+            className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-sm text-primary hover:bg-accent transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Crear nuevo tutor
+          </button>
+        </div>
+      )}
+    </div>
+  ) : null;
+
   return (
-    <div className={cn("w-full", className)} ref={ref}>
+    <div className={cn("w-full", className)} ref={triggerRef}>
       {label && (
         <label className="mb-1.5 block text-sm font-medium text-foreground">
           {label}
@@ -140,93 +272,7 @@ export function TutorSearch({ label, placeholder, value, tutorName, onChange, on
       )}
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
 
-      {open && (
-        <div className="relative z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
-          <div className="p-2 border-b">
-            <input
-              type="text"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              placeholder="Buscar por nombre, RUT, teléfono o correo..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoFocus
-            />
-          </div>
-          <div className="max-h-60 overflow-y-auto overscroll-contain p-1">
-            {loading && (
-              <div className="flex items-center justify-center py-6">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
-              </div>
-            )}
-            {!loading && searched && results.length === 0 && query.trim() && (
-              <div className="py-4 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No se encontraron tutores</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    onCreateNew();
-                  }}
-                  className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  Crear nuevo tutor
-                </button>
-              </div>
-            )}
-            {!loading && !searched && !query.trim() && (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                Escriba para buscar un tutor
-              </p>
-            )}
-            {!loading && results.length > 0 && results.map((tutor) => (
-              <button
-                key={tutor.id}
-                type="button"
-                onClick={() => handleSelect(tutor)}
-                className={cn(
-                  "flex w-full items-center rounded-sm px-2 py-2 text-sm hover:bg-accent transition-colors",
-                  value === tutor.id && "bg-accent text-accent-foreground"
-                )}
-              >
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="font-medium truncate">{tutor.nombre_completo}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tutor.rut}{tutor.telefono ? ` · ${tutor.telefono}` : ""}
-                  </p>
-                </div>
-                {value === tutor.id && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-2 shrink-0">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </button>
-            ))}
-          </div>
-          {!loading && results.length > 0 && (
-            <div className="border-t p-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  onCreateNew();
-                }}
-                className="flex w-full items-center justify-center rounded-sm px-2 py-1.5 text-sm text-primary hover:bg-accent transition-colors"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mr-1.5">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Crear nuevo tutor
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {dropdownContent && typeof document !== "undefined" && createPortal(dropdownContent, document.body)}
     </div>
   );
 }

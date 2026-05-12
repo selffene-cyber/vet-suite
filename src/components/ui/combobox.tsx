@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/utils";
 
 interface ComboboxOption {
@@ -23,11 +24,48 @@ interface ComboboxProps {
 export function Combobox({ label, placeholder, options, value, onChange, disabled, error, className }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current || !open) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedHeight = 320;
+    const showAbove = spaceBelow < estimatedHeight && rect.top > spaceBelow;
+    setDropdownStyle({
+      position: "fixed",
+      top: showAbove ? rect.top - estimatedHeight : rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  }, [open]);
+
+  useEffect(() => {
+    updatePosition();
+  }, [updatePosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleScroll = () => updatePosition();
+    const handleResize = () => updatePosition();
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [open, updatePosition]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -51,16 +89,17 @@ export function Combobox({ label, placeholder, options, value, onChange, disable
   const selected = options.find((o) => o.value === value);
 
   return (
-    <div className={cn("w-full", className)} ref={ref}>
+    <div className={cn("w-full", className)}>
       {label && (
         <label className="mb-1.5 block text-sm font-medium text-foreground">
           {label}
         </label>
       )}
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
-        onClick={() => { setOpen(!open); setQuery(""); }}
+        onClick={() => { setOpen(!open); setQuery(""); updatePosition(); }}
         className={cn(
           "flex h-12 w-full rounded-md border bg-background px-3 py-2 text-base text-left ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           error ? "border-destructive" : "border-input",
@@ -76,8 +115,12 @@ export function Combobox({ label, placeholder, options, value, onChange, disable
       </button>
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
 
-      {open && (
-        <div className="relative z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
+      {open && typeof document !== "undefined" && createPortal(
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="rounded-md border bg-popover shadow-md"
+        >
           <div className="p-2 border-b">
             <input
               type="text"
@@ -126,7 +169,8 @@ export function Combobox({ label, placeholder, options, value, onChange, disable
               </div>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
