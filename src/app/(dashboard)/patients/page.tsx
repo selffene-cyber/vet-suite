@@ -19,6 +19,20 @@ const SEX = [
   { value: "desconocido", label: "Desconocido" },
 ];
 
+const EMPTY_FORM = {
+  tutor_id: "",
+  nombre: "",
+  especie: "",
+  raza: "",
+  sexo: "desconocido",
+  fecha_nacimiento: "",
+  peso: "",
+  color: "",
+  microchip: "",
+  alergias: "",
+  condiciones_relevantes: "",
+};
+
 interface TutorInfo {
   id: string;
   nombre_completo: string;
@@ -26,26 +40,31 @@ interface TutorInfo {
   telefono: string;
 }
 
+interface PatientRecord {
+  id: string;
+  nombre: string;
+  especie: string;
+  raza: string;
+  sexo: string;
+  fecha_nacimiento: string | null;
+  peso: number | null;
+  color: string | null;
+  microchip: string | null;
+  alergias: string | null;
+  condiciones_relevantes: string | null;
+  tutor_nombre: string;
+  tutor_id: string;
+}
+
 export default function PatientsPage() {
   const [search, setSearch] = useState("");
-  const [showCreate, setShowCreate] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [showCreateTutor, setShowCreateTutor] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [patients, setPatients] = useState<Record<string, unknown>[]>([]);
-  const [form, setForm] = useState({
-    tutor_id: "",
-    nombre: "",
-    especie: "",
-    raza: "",
-    sexo: "desconocido",
-    fecha_nacimiento: "",
-    peso: "",
-    color: "",
-    microchip: "",
-    alergias: "",
-    condiciones_relevantes: "",
-  });
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [form, setForm] = useState({ ...EMPTY_FORM });
   const [selectedTutor, setSelectedTutor] = useState<TutorInfo | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -113,7 +132,7 @@ export default function PatientsPage() {
   };
 
   const handleCreateTutor = () => {
-    setShowCreate(false);
+    setShowDialog(false);
     setShowCreateTutor(true);
   };
 
@@ -146,12 +165,47 @@ export default function PatientsPage() {
       });
       setTutorForm({ nombre_completo: "", rut: "", telefono: "", correo: "", direccion: "", comuna: "", region: "", observaciones: "" });
       setShowCreateTutor(false);
-      setShowCreate(true);
+      setShowDialog(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar tutor");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleOpenCreate = () => {
+    setEditingId(null);
+    setForm({ ...EMPTY_FORM });
+    setSelectedTutor(null);
+    setFieldErrors({});
+    setError("");
+    setShowDialog(true);
+  };
+
+  const handleOpenEdit = (p: PatientRecord) => {
+    setEditingId(p.id);
+    setForm({
+      tutor_id: p.tutor_id || "",
+      nombre: p.nombre || "",
+      especie: p.especie || "",
+      raza: p.raza || "",
+      sexo: p.sexo || "desconocido",
+      fecha_nacimiento: p.fecha_nacimiento || "",
+      peso: p.peso ? String(p.peso) : "",
+      color: p.color || "",
+      microchip: p.microchip || "",
+      alergias: p.alergias || "",
+      condiciones_relevantes: p.condiciones_relevantes || "",
+    });
+    setSelectedTutor(p.tutor_nombre ? {
+      id: p.tutor_id,
+      nombre_completo: p.tutor_nombre,
+      rut: "",
+      telefono: "",
+    } : null);
+    setFieldErrors({});
+    setError("");
+    setShowDialog(true);
   };
 
   const handleSavePatient = async () => {
@@ -176,33 +230,29 @@ export default function PatientsPage() {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/patients", {
-        method: "POST",
+      const url = editingId ? `/api/patients/${editingId}` : "/api/patients";
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(result.data),
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Error al crear paciente");
+        throw new Error(data.error || "Error al guardar paciente");
       }
-      setForm({ tutor_id: "", nombre: "", especie: "", raza: "", sexo: "desconocido", fecha_nacimiento: "", peso: "", color: "", microchip: "", alergias: "", condiciones_relevantes: "" });
+      setForm({ ...EMPTY_FORM });
       setSelectedTutor(null);
       setFieldErrors({});
-      setShowCreate(false);
+      setShowDialog(false);
+      setEditingId(null);
       fetchPatients();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleOpenCreate = () => {
-    setForm({ tutor_id: "", nombre: "", especie: "", raza: "", sexo: "desconocido", fecha_nacimiento: "", peso: "", color: "", microchip: "", alergias: "", condiciones_relevantes: "" });
-    setSelectedTutor(null);
-    setFieldErrors({});
-    setError("");
-    setShowCreate(true);
   };
 
   return (
@@ -222,22 +272,30 @@ export default function PatientsPage() {
       )}
 
       {patients.map((p) => (
-        <Card key={p.id as string}>
+        <Card key={p.id} onClick={() => handleOpenEdit(p)} className="cursor-pointer hover:bg-accent/50 transition-colors">
           <CardContent className="pt-3">
-            <p className="font-medium text-sm">{p.nombre as string}</p>
-            <p className="text-xs text-muted-foreground">
-              {p.especie as string} · {p.raza as string}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Tutor: {p.tutor_nombre as string}
-            </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-sm">{p.nombre}</p>
+                <p className="text-xs text-muted-foreground">
+                  {p.especie} · {p.raza}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tutor: {p.tutor_nombre}
+                </p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground shrink-0 mt-0.5">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </div>
           </CardContent>
         </Card>
       ))}
 
       <FAB onClick={handleOpenCreate} label="Nuevo paciente" />
 
-      <Dialog open={showCreate} onClose={() => setShowCreate(false)} title="Nuevo Paciente">
+      <Dialog open={showDialog} onClose={() => setShowDialog(false)} title={editingId ? "Editar Paciente" : "Nuevo Paciente"}>
         <div className="space-y-4">
           {error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
@@ -351,12 +409,12 @@ export default function PatientsPage() {
           />
 
           <Button className="w-full" onClick={handleSavePatient} disabled={saving}>
-            {saving ? "Guardando..." : "Guardar Paciente"}
+            {saving ? "Guardando..." : editingId ? "Guardar Cambios" : "Guardar Paciente"}
           </Button>
         </div>
       </Dialog>
 
-      <Dialog open={showCreateTutor} onClose={() => { setShowCreateTutor(false); setShowCreate(true); }} title="Nuevo Tutor">
+      <Dialog open={showCreateTutor} onClose={() => { setShowCreateTutor(false); setShowDialog(true); }} title="Nuevo Tutor">
         <div className="space-y-4">
           {error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
