@@ -1,0 +1,52 @@
+{
+  "name": "vet-piwi-suite",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && wrangler pages dev .open-next/assets --d1=DB=dae7783e-c51d-4c62-ab46-88bf724c7510",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 execute piwisuite-vet-db --remote --file=sql/002_d1_schema.sql",
+    "db:migrate:local": "wrangler d1 execute piwisuite-vet-db --local --file=sql/002_d1_schema.sql"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@opennextjs/cloudflare": "^1.19.9",
+    "@react-pdf/renderer": "^4.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.469.0",
+    "next": "^15.5.18",
+    "next-themes": "^0.4.4",
+    "open-next": "^3.1.3",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.55.0",
+    "tailwind-merge": "^3.0.0",
+    "wrangler": "^4.90.0",
+    "zod": "^3.24.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.5.18",
+    "postcss": "^8.5.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.0"
+  }
+}

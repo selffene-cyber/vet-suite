@@ -1,0 +1,17 @@
+name = "vet-piwi-suite"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+assets = { directory = ".open-next/assets" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "piwisuite-vet-db"
+database_id = "dae7783e-c51d-4c62-ab46-88bf724c7510"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "piwisuite-vet-storage"
+
+[vars]
+ENVIRONMENT = "production"
