@@ -15,6 +15,7 @@ const sidebarItems = [
   { href: "/medicines", label: "Medicamentos" },
   { href: "/prescriptions/new", label: "Nueva Receta" },
   { href: "/history", label: "Historial Recetas" },
+  { href: "/appointments", label: "Controles / Agenda" },
 ];
 
 export function Sidebar() {
